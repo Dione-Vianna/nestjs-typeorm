@@ -1,4 +1,12 @@
-import { Args, Context, Mutation, Parent, Query, ResolveProperty, Resolver } from '@nestjs/graphql';
+import {
+  Args,
+  Context,
+  Mutation,
+  Parent,
+  Query,
+  ResolveField,
+  Resolver,
+} from '@nestjs/graphql';
 import RepoService from '../repo.service';
 import Author from '../db/models/author.entity';
 import Book from '../db/models/book.entity';
@@ -10,13 +18,12 @@ import { IGraphQLContext } from '../types/graphql.types';
 
 @Resolver(Genre)
 class GenreResolver {
-
   constructor(private readonly repoService: RepoService) {}
   @Query(() => [Genre])
   public async genres(): Promise<Genre[]> {
     return this.repoService.genreRepo.find();
   }
-  @Query(() => Genre, {nullable: true})
+  @Query(() => Genre, { nullable: true })
   public async genre(@Args('id') id: number): Promise<Genre> {
     return this.repoService.genreRepo.findOne(id);
   }
@@ -28,8 +35,11 @@ class GenreResolver {
     return this.repoService.genreRepo.save(genre);
   }
 
-  @ResolveProperty()
-  public async book(@Parent() parent, @Context() {genreBooksLoader}: IGraphQLContext): Promise<Book[]> {
+  @ResolveField()
+  public async book(
+    @Parent() parent,
+    @Context() { genreBooksLoader }: IGraphQLContext,
+  ): Promise<Book[]> {
     return genreBooksLoader.load(parent.id);
   }
 }
